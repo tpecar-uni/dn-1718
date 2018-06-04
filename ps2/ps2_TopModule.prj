@@ -1,0 +1,7 @@
+vhdl work "shift.vhd"
+vhdl work "ps2cu.vhd"
+vhdl work "parity.vhd"
+vhdl work "negedge.vhd"
+vhdl work "kbdDataSync.vhd"
+vhdl work "kbdClkSync.vhd"
+vhdl work "ps2_TopModule.vhd"

@@ -1,0 +1,7 @@
+vhdl work "D:\Fax\3. Letnik\DN\ps2\shift.vhd"
+vhdl work "D:\Fax\3. Letnik\DN\ps2\ps2cu.vhd"
+vhdl work "D:\Fax\3. Letnik\DN\ps2\parity.vhd"
+vhdl work "D:\Fax\3. Letnik\DN\ps2\negedge.vhd"
+vhdl work "D:\Fax\3. Letnik\DN\ps2\kbdDataSync.vhd"
+vhdl work "D:\Fax\3. Letnik\DN\ps2\kbdClkSync.vhd"
+vhdl work "D:\Fax\3. Letnik\DN\ps2\ps2_TopModule.vhd"
