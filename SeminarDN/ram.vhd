@@ -52,7 +52,8 @@ begin
 					RAM(i) <= (others => '0');
 				end loop;
 				RAM(27) <= "0000000000000000000000000000000000000100";
-				
+			
+			-- pobrise celotno vsebino
 			elsif (clear_i = '1') then
 				for i in ram_type'range loop
 					RAM(i) <= (others => '0');

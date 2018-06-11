@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    10:09:24 02/09/2017 
--- Design Name: 
--- Module Name:    TopModule - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE. STD_LOGIC_ARITH. ALL;
@@ -26,11 +7,6 @@ use IEEE. STD_LOGIC_UNSIGNED. ALL;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity TopModule is
     Port ( clk_i : in  STD_LOGIC;
@@ -136,11 +112,11 @@ architecture Behavioral of TopModule is
 	signal indexX 		: integer range 0 to 39;
 	signal indexY 		: integer range 0 to 29;
 	
-	signal snakeX		: integer range 0 to 40 := 37;
-	signal snakeY		: integer range 0 to 30 := 27;
+	signal snakeX		: integer range 0 to 40 := 20;
+	signal snakeY		: integer range 0 to 30 := 15;
 	signal direction	: STD_LOGIC_VECTOR (1 downto 0) := "01"; --00 desna; 01 gor; 10 levo; 11 dol	
-	signal foodX		: integer range 0 to 40 := 25;
-	signal foodY		: integer range 0 to 30 := 25;
+	signal foodX		: integer range 0 to 40 := 1;
+	signal foodY		: integer range 0 to 30 := 1;
 	signal freeX		: integer range 0 to 40;
 	signal freeY		: integer range 0 to 30;
 	signal free			: STD_LOGIC;
@@ -158,12 +134,15 @@ architecture Behavioral of TopModule is
 
 begin
 	
+	-- izhod ps2 modula preslika na ledice
+	-- data_o v entiteti TopModule, ta je znotraj master.ucf vezan na led
 	data_o <= ps2data;
 	sc_ready_o <= ps2ready;
 	
 	--tempX <= conv_std_logic_vector(snakeX, tempX'length);
 	--tempY <= conv_std_logic_vector(snakeY, tempY'length);
 	
+	-- prikaze score
 	segModule: seg7
 	port map (
 		clk_i => clk_i,
@@ -173,6 +152,10 @@ begin
 		cathode_o => cathode_o
 	);
 	
+	-- doloca dolzino posameznega ticka igre
+	-- (ta prescaler je definiran posebej za to)
+	-- clk_i nexys 2 je 50 Mhz
+	-- hitrost igre = (50 Mhz / 10) * speed
 	prescalerModule: prescaler
 	port map (
 		clk_i => clk_i,
@@ -216,6 +199,7 @@ begin
 	);
 	
 	-- change grid index
+	-- pretvarja piksle dejanske slike (640x480) na piksle igre (40x30)
 	process(column)
 	begin
 		indexX <= (conv_integer(column)/16);
@@ -234,54 +218,45 @@ begin
 	
 		if vidon = '1' then
 			
+			-- kaca
 			if (rDataOut(indexX) = '1') then
 				r_o <= "010";
 				g_o <= "111";
 				b_o <= "10";
 			
+			-- hrana
 			elsif (indexX = foodX and indexY = foodY) then
 				r_o <= "111";
 				g_o <= "111";
 				b_o <= "11";
 			
+			-- glava kace se izbrise ob game over
 			elsif (gameOver = '1' and indexX = snakeX and indexY = snakeY) then
 				r_o <= "000";
 				g_o <= "000";
 				b_o <= "00";
 			
+			-- ozadje se pobarva na rdece ob game over
 			elsif (gameOver = '1' and rDataOut(indexX) /= '1') then
 				r_o <= "111";
 				g_o <= "000";
 				b_o <= "00";
 			
-			elsif (indexX = foodX or indexY = foodY ) then
-				r_o <= "110";
-				g_o <= "011";
-				b_o <= "10";
-			
+			-- ozadje igre lisasto
 			elsif (rDataOut(indexX) = '0') then
 				r_o <= conv_std_logic_vector(speed/2, r_o'length);
 				g_o <= conv_std_logic_vector((conv_integer(indexY)/2), r_o'length);
 				b_o <= "01";
 
-				
+			-- slika izven igralnega polja
+			-- cel ekran ni igralna povrsina
 			else 
 				r_o <= "000";
 				g_o <= "000";
 				b_o <= "00";
 			end if;
-			
---			elsif (gameOver = '0' and (foodX /= snakeX and foodY /= snakeY)) then
---				r_o <= "001";
---				g_o <= "101";
---				b_o <= "11";
---				
---			else 
---				r_o <= "000";
---				g_o <= "000";
---				b_o <= "00";
---			end if;
-			
+		
+		-- to je tekom blankinga (ko je vidon=0)
 		else
 			r_o <= "000";
 			g_o <= "000";
@@ -290,10 +265,11 @@ begin
 		
 	end process;
 	
+	-- ta proces diktira kdaj se vpise v pomnilnik
 	process(clk_i, pClk) 
 	begin
 		if (clk_i'event and clk_i = '1') then
-			
+			--zacetna pozicija kace...spodaj desno
 			if (reset_i = '1' or restart_i = '1') then
 				snakeX <= 37;
 				snakeY <= 27;
@@ -313,6 +289,7 @@ begin
 					snakeY <= snakeY + 1;
 				end if;
 				
+				-- zahteva vpis novega kosa kace v ram
 				rWe <= '1';
 
 			else 
@@ -325,13 +302,17 @@ begin
 	
 	process(snakeX, snakeY) 
 	begin	
+		-- vpis novega kosa kace v pomnilnik
 		rAddrIn <= conv_std_logic_vector((conv_integer(snakeY)), rAddrIn'length);
 		rDataIn <= (others => '0');
 		rDataIn(snakeX) <= '1';		
 		
+		-- logika igre - preverjanje ali je kaca sla izven polja
 		if (snakeX >= 40 or snakeY >= 30) then
 			gameOver <= '1';
 		
+		-- logika igre - preverjanje ce smo naleteli na kos kace
+		-- v tem primeru ti 1 xor 1 da 0, torej trenutni gledan piksel igre ima vrednost 0
 		elsif (rBit(snakeX) = '0') then
 			if (clearSafe = '1') then
 				gameOver <= '0';
@@ -363,6 +344,7 @@ begin
 				
 			end if;
 			
+			-- ko kaca poje 3 hrane, proces spodaj izvede clear rama
 			if (clear = "00000000") then
 				clear <=	"00000011";
 			end if;
@@ -383,12 +365,16 @@ begin
 		end if;
 	end process;
 
+
 	process(clk_i, clear, pClk)
 	begin
 		if (clk_i'event and clk_i = '1') then
 			if (reset_i = '1') then
 				speed <= 0;
 			
+			-- gleda vrednost registra clear, ki ga spreminja zgornji proces
+			-- ko je 0 (to se zgodi ko kaca poje 3 hrane - namrec clear je ob startu 3 ter pada)
+			-- se tu povzroci clearPulse, ki pobrise ram
 			elsif (clear = 0) then
 				clearPulse <= '1';
 				clearSafe <= '1';
@@ -433,4 +419,3 @@ begin
 	end process;
 	
 end Behavioral;
-
