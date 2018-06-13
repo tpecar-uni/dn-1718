@@ -44,6 +44,7 @@
 *.exe
 *.wdb
 *.xmsgs
+*.log
 
 # iMPACT generated files
 _impactbatch.log
@@ -68,3 +69,4 @@ xlnx_auto_0_xdb/
 xst/
 _ngo/
 _xmsgs/
+isim/

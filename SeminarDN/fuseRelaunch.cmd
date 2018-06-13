@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -o "/home/tpecar/faks/1semester/dn/razvoj/vzorcna/DN/SeminarDN/TopModule_isim_beh.exe" -prj "/home/tpecar/faks/1semester/dn/razvoj/vzorcna/DN/SeminarDN/TopModule_beh.prj" "work.TopModule" 
